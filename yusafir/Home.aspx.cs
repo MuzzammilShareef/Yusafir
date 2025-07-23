@@ -1,22 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
-namespace yusafir
+namespace Yusafir
 {
-    public partial class Home : System.Web.UI.Page
+    public partial class home : Page
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            // You can show user name here if logged in
+            // lblWelcome.Text = "Welcome, " + Session["UserName"];
         }
 
-        protected void btnSearch_Click(object sender, EventArgs e)
+        protected void btnFlights_Click(object sender, EventArgs e)
         {
+            Response.Redirect("Flights.aspx");
+        }
 
+        protected void btnHotels_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("Hotels.aspx");
+        }
+
+        protected void btnPackages_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("Packages.aspx");
+        }
+
+        protected void btnVehicles_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("Vehicles.aspx");
         }
     }
 }
