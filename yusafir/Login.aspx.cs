@@ -1,55 +1,84 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace yusafir
 {
     public partial class Login : System.Web.UI.Page
     {
-        protected void Page_Load(object sender, EventArgs e)
+        protected bool IsAdminMode
         {
-
+            get { return (ViewState["IsAdminMode"] as bool?) ?? false; }
+            set { ViewState["IsAdminMode"] = value; }
         }
 
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                IsAdminMode = false; // Default is user login on first load
+            }
+            Page.DataBind(); // Always bind mode-dependent controls
+        }
+
+        // Handles login as Admin or as User
         protected void btnLogin_Click(object sender, EventArgs e)
         {
-            string conStr = "Data Source=MUZZAMMIL;Initial Catalog = yusafir; Integrated Security=True";
-            SqlConnection con = new SqlConnection(conStr);
+            string email = txtEmail.Text.Trim();
+            string password = txtPassword.Text.Trim();
+            string role = IsAdminMode ? "Admin" : "User";
 
-            string query = "Select * from users where email=@email and password = @password";
-            SqlCommand cmd = new SqlCommand(query, con);
-            cmd.Parameters.AddWithValue("Email",txtEmail.Text);
-            cmd.Parameters.AddWithValue("Password", txtPassword.Text);
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+            {
+                lblMessage.Text = "Please enter both username and password.";
+                return;
+            }
+
+            string conStr = "Data Source=MUZZAMMIL;Initial Catalog=yusafir;Integrated Security=True";
+            string query = "SELECT UserId, Name FROM users WHERE email = @Email AND password = @Password AND Role = @Role";
 
             try
             {
-                con.Open();
-                SqlDataReader dr = cmd.ExecuteReader();
-                if (dr.Read())
+                using (SqlConnection con = new SqlConnection(conStr))
+                using (SqlCommand cmd = new SqlCommand(query, con))
                 {
-                    Session["UserId"] = dr["UserId"];
-                    Session["Role"] = dr["Role"];
-                    Session["UserName"] = dr["Name"];
-                    Response.Redirect("Home.aspx");
-                }
-                else
-                {
-                    lblMessage.Text = "Invalid email or password.";
+                    cmd.Parameters.AddWithValue("@Email", email);
+                    cmd.Parameters.AddWithValue("@Password", password);
+                    cmd.Parameters.AddWithValue("@Role", role);
+
+                    con.Open();
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        if (dr.Read())
+                        {
+                            Session["UserId"] = dr["UserId"];
+                            Session["UserName"] = dr["Name"];
+                            Session["Role"] = role;
+                            // Redirect based on login mode
+                            if (IsAdminMode)
+                                Response.Redirect("AdminDashboard.aspx");
+                            else
+                                Response.Redirect("Home.aspx");
+                        }
+                        else
+                        {
+                            lblMessage.Text = "Invalid credentials.";
+                        }
+                    }
                 }
             }
             catch (Exception ex)
             {
-                lblMessage.Text = "Error: " + ex.Message;
+                lblMessage.Text = "Server error: " + ex.Message;
             }
-            finally
-            {
-                con.Close();
-            }
+        }
 
+        // Toggle Admin/User mode and update UI
+        protected void btnSwitchMode_Click(object sender, EventArgs e)
+        {
+            IsAdminMode = !IsAdminMode;
+            Page.DataBind(); // Refresh texts
+            lblMessage.Text = "";
+            txtPassword.Text = "";
         }
     }
 }

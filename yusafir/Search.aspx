@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Search.aspx.cs" Inherits="yusafir.Search" %>
+﻿    <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Search.aspx.cs" Inherits="yusafir.Search" %>
 
 <!DOCTYPE html>
 <html>
@@ -78,6 +78,48 @@
             height: 158px;
             width: 770px;
         }
+        .styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 30px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e1e1e1;
+    text-align: left;
+}
+
+.styled-table thead {
+    background-color: #007bff;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.styled-table tr:hover {
+    background-color: #f1f7ff;
+}
+
+.book-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.book-btn:hover {
+    background-color: #218838;
+}
+
     </style>
 </head>
 <body>
@@ -125,17 +167,23 @@
                 <asp:Button ID="btnSearch" runat="server" Text="Search For Flights" OnClick="btnSearch_Click" />
             </div>
 
-            <asp:GridView ID="gvFlights" runat="server" AutoGenerateColumns="false" CssClass="table table-bordered" class="form-row" Visible="false">
-                <Columns>
-                    <asp:BoundField DataField="FlightId" HeaderText="Flight ID" />
-                    <asp:BoundField DataField="FlightType" HeaderText="Flight Type" />
-                    <asp:BoundField DataField="Source" HeaderText="Source" />
-                    <asp:BoundField DataField="Destination" HeaderText="Destination" />
-                    <asp:BoundField DataField="DepartureDate" HeaderText="Departure Date" />
-                    <asp:BoundField DataField="Price" HeaderText="Price" />
-                    <asp:BoundField DataField="TotalSeats" HeaderText="Total Seats" />
-                </Columns>
-            </asp:GridView>
+            <asp:GridView ID="gvFlights" runat="server" AutoGenerateColumns="False" CssClass="styled-table" OnRowCommand="gvFlights_RowCommand" Visible="false" OnSelectedIndexChanged="gvFlights_SelectedIndexChanged">
+    <Columns>
+        <asp:BoundField DataField="FlightId" HeaderText="Flight ID" />
+        <asp:BoundField DataField="FlightType" HeaderText="Flight Type" />
+        <asp:BoundField DataField="Source" HeaderText="Source" />
+        <asp:BoundField DataField="Destination" HeaderText="Destination" />
+        <asp:BoundField DataField="DepartureDate" HeaderText="Departure Date" />
+        <asp:BoundField DataField="Price" HeaderText="Price" />
+        <asp:BoundField DataField="TotalSeats" HeaderText="Total Seats" />
+        <asp:TemplateField HeaderText="Action">
+            <ItemTemplate>
+                <asp:Button ID="btnBook" runat="server" Text="Book" CommandName="BookFlight" CommandArgument='<%# Eval("FlightId") %>' CssClass="book-btn" />
+            </ItemTemplate>
+        </asp:TemplateField>
+    </Columns>
+</asp:GridView>
+
 
         </div>
     </form>

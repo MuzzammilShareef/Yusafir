@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -17,7 +14,7 @@ namespace yusafir
             if (!IsPostBack)
             {
                 LoadCustomers();
-                LoadLocations(); // for both source & destination
+                LoadLocations();
                 LoadTimeDropdowns();
                 LoadPassengers();
             }
@@ -42,6 +39,7 @@ namespace yusafir
         private void LoadLocations()
         {
             string cs = ConfigurationManager.ConnectionStrings["mydbcon"].ConnectionString;
+
             using (SqlConnection con = new SqlConnection(cs))
             {
                 SqlCommand cmd = new SqlCommand("SELECT DISTINCT Source FROM Flights", con);
@@ -52,10 +50,8 @@ namespace yusafir
                 ddlSource.DataValueField = "Source";
                 ddlSource.DataBind();
             }
-
             ddlSource.Items.Insert(0, new ListItem("--Select--", ""));
 
-            // Repeat for Destination
             using (SqlConnection con = new SqlConnection(cs))
             {
                 SqlCommand cmd = new SqlCommand("SELECT DISTINCT Destination FROM Flights", con);
@@ -94,7 +90,6 @@ namespace yusafir
 
         protected void btnSearch_Click(object sender, EventArgs e)
         {
-            // Clear any old messages
             lblMessage.Text = "";
             lblMessage.ForeColor = System.Drawing.Color.Red;
             gvFlights.Visible = false;
@@ -103,14 +98,12 @@ namespace yusafir
             DateTime currentDate = DateTime.Today;
             DateTime departureDate;
 
-            // Validate CustomerID
             if (ddlCustomerId.SelectedIndex == 0)
             {
                 lblMessage.Text += "‘CustomerID’ should be selected from drop down.<br/>";
                 isValid = false;
             }
 
-            // Validate Source and Destination
             if (ddlSource.SelectedIndex == 0 || ddlDestination.SelectedIndex == 0)
             {
                 lblMessage.Text += "‘Source and Destination’ should be selected from drop down.<br/>";
@@ -122,7 +115,6 @@ namespace yusafir
                 isValid = false;
             }
 
-            // Validate Departure Date
             if (DateTime.TryParse(txtDate.Text, out departureDate))
             {
                 if (departureDate < currentDate)
@@ -137,7 +129,6 @@ namespace yusafir
                 isValid = false;
             }
 
-            // Validate Adults
             int adults = int.Parse(ddlAdults.SelectedValue);
             if (adults < 1 || adults > 4)
             {
@@ -145,7 +136,6 @@ namespace yusafir
                 isValid = false;
             }
 
-            // Validate Children
             int children = int.Parse(ddlChildren.SelectedValue);
             if (children < 0 || children > 4)
             {
@@ -153,7 +143,6 @@ namespace yusafir
                 isValid = false;
             }
 
-            // If all inputs valid, proceed with DB search
             if (isValid)
             {
                 lblMessage.Text = "All validations passed. Searching for flights...";
@@ -164,13 +153,12 @@ namespace yusafir
                 using (SqlConnection con = new SqlConnection(conStr))
                 {
                     string query = @"SELECT * FROM Flights 
-                             WHERE Source = @Source AND Destination = @Destination AND DepartureDate = @DepartureDate";
+                                     WHERE Source = @Source AND Destination = @Destination AND DepartureDate = @DepartureDate";
 
                     SqlCommand cmd = new SqlCommand(query, con);
                     cmd.Parameters.AddWithValue("@Source", ddlSource.SelectedValue);
                     cmd.Parameters.AddWithValue("@Destination", ddlDestination.SelectedValue);
                     cmd.Parameters.AddWithValue("@DepartureDate", txtDate.Text);
-
 
                     SqlDataAdapter da = new SqlDataAdapter(cmd);
                     DataTable dt = new DataTable();
@@ -189,6 +177,18 @@ namespace yusafir
             }
         }
 
+        protected void gvFlights_RowCommand(object sender, GridViewCommandEventArgs e)
+        {
+            if (e.CommandName == "BookFlight")
+            {
+                string flightId = e.CommandArgument.ToString();
+                Response.Redirect("BookFlight.aspx?flightId=" + flightId);
+            }
+        }
 
+        protected void gvFlights_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }
