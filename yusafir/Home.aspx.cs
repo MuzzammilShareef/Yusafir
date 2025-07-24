@@ -13,7 +13,7 @@ namespace Yusafir
 
         protected void btnFlights_Click(object sender, EventArgs e)
         {
-            Response.Redirect("Flights.aspx");
+            Response.Redirect("Search.aspx");
         }
 
         protected void btnHotels_Click(object sender, EventArgs e)

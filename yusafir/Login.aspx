@@ -85,6 +85,10 @@
             font-size: 1.12rem;
             pointer-events: none;               /* Prevents icon from blocking input clicks */
         }
+        .input-icon.toggle-eye {
+            pointer-events: auto;
+            cursor: pointer;
+        }
 
         .row-options {
             width: 100%;
@@ -189,13 +193,14 @@
                 <asp:Label ID="lblMessage" runat="server" />
 
                 <div class="input-group">
-                    <asp:TextBox ID="txtEmail" runat="server" CssClass="input-box" placeholder="Username" AutoCompleteType="None" />
+                    <asp:TextBox ID="txtEmail" runat="server" CssClass="input-box" placeholder="Email" AutoCompleteType="None" />
                     <i class="fa fa-user input-icon"></i>
                 </div>
                 <div class="input-group">
-                    <asp:TextBox ID="txtPassword" runat="server" CssClass="input-box" TextMode="Password" placeholder="Password" AutoCompleteType="None" />
-                    <i class="fa fa-lock input-icon"></i>
+                <asp:TextBox ID="txtPassword" runat="server" CssClass="input-box" TextMode="Password" placeholder="Password" />
+                <i id="togglePassword" class="fa fa-eye input-icon toggle-eye" style="cursor:pointer;"></i>
                 </div>
+
                 <div class="row-options">
                     <label class="remember-label">
                         <asp:CheckBox ID="chkRemember" runat="server" CssClass="remember-me" />
@@ -222,6 +227,25 @@
             </div>
         </form>
     </div>
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+    var eye = document.getElementById('togglePassword');
+    var pwd = document.getElementById('<%= txtPassword.ClientID %>'); // Get the real rendered ID
+
+    eye.addEventListener('click', function() {
+        if (pwd.type === 'password') {
+            pwd.type = 'text';
+            eye.classList.remove('fa-eye');
+            eye.classList.add('fa-eye-slash');
+        } else {
+            pwd.type = 'password';
+            eye.classList.remove('fa-eye-slash');
+            eye.classList.add('fa-eye');
+        }
+    });
+});
+    </script>
+
 </body>
 </html>
 Z

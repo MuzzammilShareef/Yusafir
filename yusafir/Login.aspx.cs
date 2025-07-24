@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.SqlClient;
+using System.Web;
 
 namespace yusafir
 {
@@ -15,17 +16,31 @@ namespace yusafir
         {
             if (!IsPostBack)
             {
+                // Check if user is not logged in, but cookie exists => auto-login
+                if (Session["UserId"] == null && Request.Cookies["YusafirAuth"] != null)
+                {
+                    var cookie = Request.Cookies["YusafirAuth"];
+                    Session["UserId"] = cookie.Values["UserId"];
+                    Session["UserName"] = cookie.Values["UserName"];
+                    Session["Role"] = cookie.Values["Role"];
+
+                    // Redirect immediately based on role
+                    Response.Redirect(Session["Role"].ToString() == "Admin" ? "AdminDashboard.aspx" : "Home.aspx");
+                }
+
                 IsAdminMode = false; // Default is user login on first load
+                Page.DataBind(); // Bind UI based on mode
             }
-            Page.DataBind(); // Always bind mode-dependent controls
         }
 
         // Handles login as Admin or as User
         protected void btnLogin_Click(object sender, EventArgs e)
         {
+            lblMessage.Text = "";  // Clear previous messages
+
             string email = txtEmail.Text.Trim();
             string password = txtPassword.Text.Trim();
-            string role = IsAdminMode ? "Admin" : "User";
+            string role = IsAdminMode ? "Admin" : "Customer";
 
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             {
@@ -34,7 +49,7 @@ namespace yusafir
             }
 
             string conStr = "Data Source=MUZZAMMIL;Initial Catalog=yusafir;Integrated Security=True";
-            string query = "SELECT UserId, Name FROM users WHERE email = @Email AND password = @Password AND Role = @Role";
+            string query = "SELECT UserId, Name FROM users WHERE Email = @Email AND password = @Password AND Role = @Role";
 
             try
             {
@@ -50,9 +65,32 @@ namespace yusafir
                     {
                         if (dr.Read())
                         {
+                            // Set session variables
                             Session["UserId"] = dr["UserId"];
                             Session["UserName"] = dr["Name"];
                             Session["Role"] = role;
+
+                            // Handle "Remember Me" checkbox - set persistent cookie if checked
+                            if (chkRemember.Checked)
+                            {
+                                HttpCookie authCookie = new HttpCookie("YusafirAuth");
+                                authCookie.Values["UserId"] = dr["UserId"].ToString();
+                                authCookie.Values["UserName"] = dr["Name"].ToString();
+                                authCookie.Values["Role"] = role;
+                                authCookie.Expires = DateTime.Now.AddHours(12); // Cookie valid for 12 hours
+                                Response.Cookies.Add(authCookie);
+                            }
+                            else
+                            {
+                                // Remove cookie if exists and checkbox not checked
+                                if (Request.Cookies["YusafirAuth"] != null)
+                                {
+                                    var expiredCookie = new HttpCookie("YusafirAuth");
+                                    expiredCookie.Expires = DateTime.Now.AddDays(-1);
+                                    Response.Cookies.Add(expiredCookie);
+                                }
+                            }
+
                             // Redirect based on login mode
                             if (IsAdminMode)
                                 Response.Redirect("AdminDashboard.aspx");
@@ -76,7 +114,7 @@ namespace yusafir
         protected void btnSwitchMode_Click(object sender, EventArgs e)
         {
             IsAdminMode = !IsAdminMode;
-            Page.DataBind(); // Refresh texts
+            Page.DataBind(); // Refresh UI texts accordingly
             lblMessage.Text = "";
             txtPassword.Text = "";
         }

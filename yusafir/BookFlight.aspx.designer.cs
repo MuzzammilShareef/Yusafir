@@ -39,7 +39,7 @@ namespace yusafir
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtAdults;
+        protected global::System.Web.UI.WebControls.DropDownList txtAdults;
 
         /// <summary>
         /// txtChildren control.
@@ -48,7 +48,7 @@ namespace yusafir
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtChildren;
+        protected global::System.Web.UI.WebControls.DropDownList txtChildren;
 
         /// <summary>
         /// ddlPaymentMethod control.
